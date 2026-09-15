@@ -19,27 +19,27 @@ const departments: Department[] = [
 ];
 
 const projects: Project[] = [
-  { id: "P1", name: "OpenAI LAX1", customer: "OpenAI", code: "LAX1", location: "Los Angeles, CA", status: "Active", start: 0, end: 10, priority: "High" },
-  { id: "P2", name: "Grainger PDX", customer: "Grainger", code: "PDX", location: "Portland, OR", status: "Active", start: 0, end: 11, priority: "High" },
-  { id: "P3", name: "Medtronic ATL", customer: "Medtronic", code: "ATL", location: "Atlanta, GA", status: "Planning", start: 3, end: 11, priority: "Medium" },
-  { id: "P4", name: "Barnes & Noble EWR", customer: "Barnes & Noble", code: "EWR", location: "Newark, NJ", status: "Planning", start: 6, end: 11, priority: "Medium" },
+  { id: "P1", name: "Project Atlas LAX1", customer: "Customer A", code: "LAX1", location: "Los Angeles, CA", status: "Active", start: 0, end: 10, priority: "High" },
+  { id: "P2", name: "Project Beacon DFW1", customer: "Customer B", code: "DFW1", location: "Fort Worth, TX", status: "Active", start: 0, end: 11, priority: "High" },
+  { id: "P3", name: "Project Cedar ATL1", customer: "Customer C", code: "ATL1", location: "Atlanta, GA", status: "Planning", start: 3, end: 11, priority: "Medium" },
+  { id: "P4", name: "Project Delta EWR1", customer: "Customer D", code: "EWR1", location: "Newark, NJ", status: "Planning", start: 6, end: 11, priority: "Medium" },
 ];
 
 const people: Person[] = [
-  { id: "U1", first: "Eli", last: "Tiemann", dept: "PSE", title: "Project System Engineer", location: "Portland, OR", capacity: 1 },
-  { id: "U2", first: "Michael", last: "Harris", dept: "PSE", title: "Project System Engineer", location: "Houston, TX", capacity: 1 },
-  { id: "U3", first: "Taylor", last: "Reed", dept: "FE", title: "Field Engineer", location: "Atlanta, GA", capacity: 1 },
-  { id: "U4", first: "Casey", last: "Nguyen", dept: "FE", title: "Field Engineer", location: "Chicago, IL", capacity: 1 },
-  { id: "U5", first: "Morgan", last: "Patel", dept: "PM", title: "Project Manager", location: "Atlanta, GA", capacity: 1 },
-  { id: "U6", first: "Riley", last: "Kim", dept: "SW", title: "Software Engineer", location: "Atlanta, GA", capacity: 1 },
-  { id: "U7", first: "Jamie", last: "Carter", dept: "HW", title: "Hardware Engineer", location: "Atlanta, GA", capacity: 1 },
-  { id: "U8", first: "Sam", last: "Brooks", dept: "SS", title: "Site Supervisor", location: "Dallas, TX", capacity: 1 },
-  { id: "U9", first: "Avery", last: "Lopez", dept: "FE", title: "Field Engineer", location: "Dallas, TX", capacity: 1 },
-  { id: "U10", first: "Jordan", last: "Price", dept: "FE", title: "Field Engineer", location: "Newark, NJ", capacity: 1 },
-  { id: "U11", first: "Drew", last: "Bennett", dept: "PM", title: "Project Manager", location: "Chicago, IL", capacity: 1 },
-  { id: "U12", first: "Skyler", last: "Chen", dept: "SW", title: "Software Engineer", location: "Boston, MA", capacity: 1 },
-  { id: "U13", first: "Cameron", last: "Diaz", dept: "HW", title: "Hardware Engineer", location: "Atlanta, GA", capacity: 1 },
-  { id: "U14", first: "Quinn", last: "Ross", dept: "SS", title: "Site Supervisor", location: "Los Angeles, CA", capacity: 1 },
+  { id: "U1", first: "Employee", last: "001", dept: "PSE", title: "Project System Engineer", location: "Atlanta, GA", capacity: 1 },
+  { id: "U2", first: "Employee", last: "002", dept: "PSE", title: "Project System Engineer", location: "Houston, TX", capacity: 1 },
+  { id: "U3", first: "Employee", last: "003", dept: "FE", title: "Field Engineer", location: "Atlanta, GA", capacity: 1 },
+  { id: "U4", first: "Employee", last: "004", dept: "FE", title: "Field Engineer", location: "Chicago, IL", capacity: 1 },
+  { id: "U5", first: "Employee", last: "005", dept: "PM", title: "Project Manager", location: "Atlanta, GA", capacity: 1 },
+  { id: "U6", first: "Employee", last: "006", dept: "SW", title: "Software Engineer", location: "Atlanta, GA", capacity: 1 },
+  { id: "U7", first: "Employee", last: "007", dept: "HW", title: "Hardware Engineer", location: "Atlanta, GA", capacity: 1 },
+  { id: "U8", first: "Employee", last: "008", dept: "SS", title: "Site Supervisor", location: "Dallas, TX", capacity: 1 },
+  { id: "U9", first: "Employee", last: "009", dept: "FE", title: "Field Engineer", location: "Dallas, TX", capacity: 1 },
+  { id: "U10", first: "Employee", last: "010", dept: "FE", title: "Field Engineer", location: "Newark, NJ", capacity: 1 },
+  { id: "U11", first: "Employee", last: "011", dept: "PM", title: "Project Manager", location: "Chicago, IL", capacity: 1 },
+  { id: "U12", first: "Employee", last: "012", dept: "SW", title: "Software Engineer", location: "Boston, MA", capacity: 1 },
+  { id: "U13", first: "Employee", last: "013", dept: "HW", title: "Hardware Engineer", location: "Atlanta, GA", capacity: 1 },
+  { id: "U14", first: "Employee", last: "014", dept: "SS", title: "Site Supervisor", location: "Los Angeles, CA", capacity: 1 },
 ];
 
 const baseDemand: Demand[] = [
