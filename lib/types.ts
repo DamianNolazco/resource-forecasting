@@ -1,0 +1,11 @@
+export type ProjectStatus = "Active" | "Planning" | "Complete" | "On Hold";
+export type AllocationType = "Committed" | "Tentative";
+export type Project = { project_id:string; project_name:string; customer:string; site_code:string; location:string; status:ProjectStatus|string; start_date:string; end_date:string; priority:string; notes?:string };
+export type Department = { department_id:string; department_name:string; short_name:string; default_weekly_hours:number; utilization_target:number };
+export type Person = { person_id:string; first_name:string; last_name:string; department_id:string; title:string; location:string; fte:number; weekly_capacity_hours:number; start_date:string; end_date?:string; active:boolean|string };
+export type Forecast = { forecast_id:string; scenario_id:string; project_id:string; department_id:string; period_start:string; period_end:string; demand_hours:number; demand_fte:number; confidence:number; notes?:string };
+export type Allocation = { allocation_id:string; scenario_id:string; person_id:string; project_id:string; period_start:string; period_end:string; allocated_hours:number; allocation_pct:number; allocation_type:AllocationType|string; notes?:string };
+export type Scenario = { scenario_id:string; scenario_name:string; status:string; base_scenario_id?:string; description?:string; created_date:string };
+export type CapacityAdjustment = { adjustment_id:string; person_id:string; period_start:string; period_end:string; adjustment_hours:number; adjustment_type:string; notes?:string };
+export type PlannerSettings = Record<string,string|number>;
+export type PlannerData = { projects:Project[]; departments:Department[]; people:Person[]; forecast:Forecast[]; allocations:Allocation[]; scenarios:Scenario[]; capacityAdjustments:CapacityAdjustment[]; settings:PlannerSettings };
