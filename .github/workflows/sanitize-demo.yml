@@ -1,0 +1,64 @@
+name: Sanitize demo labels
+
+on:
+  push:
+    paths:
+      - SANITIZE_DEMO_DATA
+
+permissions:
+  contents: write
+
+jobs:
+  sanitize:
+    if: github.event.head_commit.message == 'Trigger synthetic demo data sanitization'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Replace demo names with synthetic labels
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          path = Path('app/page.tsx')
+          text = path.read_text()
+
+          projects = '''const projects: Project[] = [
+            { id: "P1", name: "Project Atlas LAX1", customer: "Customer A", code: "LAX1", location: "Los Angeles, CA", status: "Active", start: 0, end: 10, priority: "High" },
+            { id: "P2", name: "Project Beacon DFW1", customer: "Customer B", code: "DFW1", location: "Fort Worth, TX", status: "Active", start: 0, end: 11, priority: "High" },
+            { id: "P3", name: "Project Cedar ATL1", customer: "Customer C", code: "ATL1", location: "Atlanta, GA", status: "Planning", start: 3, end: 11, priority: "Medium" },
+            { id: "P4", name: "Project Delta EWR1", customer: "Customer D", code: "EWR1", location: "Newark, NJ", status: "Planning", start: 6, end: 11, priority: "Medium" },
+          ];'''
+
+          people = '''const people: Person[] = [
+            { id: "U1", first: "Employee", last: "001", dept: "PSE", title: "Project System Engineer", location: "Atlanta, GA", capacity: 1 },
+            { id: "U2", first: "Employee", last: "002", dept: "PSE", title: "Project System Engineer", location: "Houston, TX", capacity: 1 },
+            { id: "U3", first: "Employee", last: "003", dept: "FE", title: "Field Engineer", location: "Atlanta, GA", capacity: 1 },
+            { id: "U4", first: "Employee", last: "004", dept: "FE", title: "Field Engineer", location: "Chicago, IL", capacity: 1 },
+            { id: "U5", first: "Employee", last: "005", dept: "PM", title: "Project Manager", location: "Atlanta, GA", capacity: 1 },
+            { id: "U6", first: "Employee", last: "006", dept: "SW", title: "Software Engineer", location: "Atlanta, GA", capacity: 1 },
+            { id: "U7", first: "Employee", last: "007", dept: "HW", title: "Hardware Engineer", location: "Atlanta, GA", capacity: 1 },
+            { id: "U8", first: "Employee", last: "008", dept: "SS", title: "Site Supervisor", location: "Dallas, TX", capacity: 1 },
+            { id: "U9", first: "Employee", last: "009", dept: "FE", title: "Field Engineer", location: "Dallas, TX", capacity: 1 },
+            { id: "U10", first: "Employee", last: "010", dept: "FE", title: "Field Engineer", location: "Newark, NJ", capacity: 1 },
+            { id: "U11", first: "Employee", last: "011", dept: "PM", title: "Project Manager", location: "Chicago, IL", capacity: 1 },
+            { id: "U12", first: "Employee", last: "012", dept: "SW", title: "Software Engineer", location: "Boston, MA", capacity: 1 },
+            { id: "U13", first: "Employee", last: "013", dept: "HW", title: "Hardware Engineer", location: "Atlanta, GA", capacity: 1 },
+            { id: "U14", first: "Employee", last: "014", dept: "SS", title: "Site Supervisor", location: "Los Angeles, CA", capacity: 1 },
+          ];'''
+
+          text, project_count = re.subn(r'const projects: Project\[\] = \[.*?\n\];', projects, text, count=1, flags=re.S)
+          text, people_count = re.subn(r'const people: Person\[\] = \[.*?\n\];', people, text, count=1, flags=re.S)
+          if project_count != 1 or people_count != 1:
+              raise SystemExit(f'Expected one project and people block, got {project_count=} {people_count=}')
+          path.write_text(text)
+          PY
+      - name: Commit sanitized demo data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app/page.tsx
+          git diff --cached --quiet && exit 0
+          git commit -m "Replace demo project and people names with synthetic labels"
+          git push
