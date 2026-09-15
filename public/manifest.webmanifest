@@ -1,0 +1,9 @@
+{
+  "name": "Exotec Resource Planner",
+  "short_name": "Resource Planner",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f7f5f0",
+  "theme_color": "#f7f5f0",
+  "description": "Forecast demand, allocate people, track utilization and surface hiring needs."
+}
