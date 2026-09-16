@@ -32,7 +32,7 @@ const projects:Project[] = [
   {id:"P4",name:"Project Delta EWR1",code:"EWR1",customer:"Customer D",location:"Newark, NJ",status:"Planning"},
 ];
 
-const people:Person[] = [
+const seedPeople:Person[] = [
   {id:"U1",name:"Employee 001",dept:"PSE",title:"Project System Engineer",location:"Atlanta, GA"},
   {id:"U2",name:"Employee 002",dept:"PSE",title:"Project System Engineer",location:"Houston, TX"},
   {id:"U3",name:"Employee 003",dept:"FE",title:"Field Engineer",location:"Atlanta, GA"},
@@ -93,6 +93,7 @@ export default function Page(){
   const [view,setView] = useState<View>("planner");
   const [projectId,setProjectId] = useState("P1");
   const [bars,setBars] = useState<PlanBar[]>(seedBars);
+  const [people,setPeople] = useState<Person[]>(seedPeople);
   const [milestones,setMilestones] = useState<Milestone[]>(seedMilestones);
   const [selectedBarId,setSelectedBarId] = useState<string|null>(null);
   const [resourceYear,setResourceYear] = useState(2026);
@@ -161,7 +162,7 @@ export default function Page(){
     const team=people.filter(p=>p.dept===dept.id).length;
     const monthly=timelineMonths.map(m=>bars.filter(b=>b.dept===dept.id&&b.start<=m.index&&b.end>=m.index).reduce((s,b)=>s+b.allocation,0));
     return {dept,team,monthly,peak:Math.max(0,...monthly)};
-  }),[bars]);
+  }),[bars,people]);
 
   const nav:{id:View;label:string}[]=[
     {id:"planner",label:"Project planner"},
@@ -230,7 +231,7 @@ export default function Page(){
           </section>
         </>}
 
-        {view==="resources"&&<ResourcesView year={resourceYear} setYear={setResourceYear} allocationFor={allocationFor}/>} 
+        {view==="resources"&&<ResourcesView year={resourceYear} setYear={setResourceYear} allocationFor={allocationFor} people={people} onAdd={person=>setPeople(current=>[...current,person])}/>} 
         {view==="capacity"&&<CapacityView rows={capacityRows}/>} 
         {view==="projects"&&<ProjectsView selected={projectId} onPlan={id=>{setProjectId(id);setView("planner");}}/>}
       </div>
@@ -238,7 +239,7 @@ export default function Page(){
       <nav className="bottom-nav">{nav.map(n=><button key={n.id} className={view===n.id?"active":""} onClick={()=>setView(n.id)}>{n.label}</button>)}</nav>
     </main>
 
-    {selectedBar&&<BarDrawer bar={selectedBar} onClose={()=>setSelectedBarId(null)} onUpdate={patch=>updateBar(selectedBar.id,patch)} onDelete={()=>{setBars(current=>current.filter(b=>b.id!==selectedBar.id));setSelectedBarId(null);}}/>}
+    {selectedBar&&<BarDrawer bar={selectedBar} people={people} onClose={()=>setSelectedBarId(null)} onUpdate={patch=>updateBar(selectedBar.id,patch)} onDelete={()=>{setBars(current=>current.filter(b=>b.id!==selectedBar.id));setSelectedBarId(null);}}/>}
   </div>;
 }
 
@@ -249,7 +250,7 @@ function MilestoneLane({milestones,onMove}:{milestones:Milestone[];onMove:(id:st
   </div>;
 }
 
-function BarDrawer({bar,onClose,onUpdate,onDelete}:{bar:PlanBar;onClose:()=>void;onUpdate:(patch:Partial<PlanBar>)=>void;onDelete:()=>void}){
+function BarDrawer({bar,people,onClose,onUpdate,onDelete}:{bar:PlanBar;people:Person[];onClose:()=>void;onUpdate:(patch:Partial<PlanBar>)=>void;onDelete:()=>void}){
   const eligible=people.filter(p=>p.dept===bar.dept);
   return <div className="drawer-backdrop" onMouseDown={onClose}><aside className="drawer" onMouseDown={e=>e.stopPropagation()}>
     <div className="drawer-head"><div><span className="eyebrow">Resource allocation</span><h2>{bar.dept} resource</h2></div><button className="close-btn" onClick={onClose}>×</button></div>
@@ -264,15 +265,59 @@ function BarDrawer({bar,onClose,onUpdate,onDelete}:{bar:PlanBar;onClose:()=>void
   </aside></div>;
 }
 
-function ResourcesView({year,setYear,allocationFor}:{year:number;setYear:(y:number)=>void;allocationFor:(personId:string,monthIndex:number)=>number}){
+function ResourcesView({year,setYear,allocationFor,people,onAdd}:{year:number;setYear:(y:number)=>void;allocationFor:(personId:string,monthIndex:number)=>number;people:Person[];onAdd:(person:Person)=>void}){
   const yearOffset=(year-START_YEAR)*12;
-  return <><div className="page-title with-action"><div><span className="eyebrow">People utilization</span><h1>Resources</h1><p>Monthly allocation by person. Percentages combine every project assigned to that resource.</p></div><label className="year-select">Year<select value={year} onChange={e=>setYear(Number(e.target.value))}><option value={2026}>2026</option><option value={2027}>2027</option></select></label></div>
-    <div className="resource-table-card card"><div className="resource-table-scroll"><table className="resource-table"><thead><tr><th>Resource</th>{monthNames.map(m=><th key={m}>{m}</th>)}<th>Avg.</th></tr></thead><tbody>{people.map(person=>{const values=monthNames.map((_,m)=>allocationFor(person.id,yearOffset+m));const avg=values.reduce((s,v)=>s+v,0)/12;return <tr key={person.id}><td><strong>{person.name}</strong><small>{person.dept} · {person.title}</small></td>{values.map((v,i)=><td key={i}><span className={`alloc-cell ${v>1?"over":v>.85?"high":v>0?"used":"empty"}`}>{v?pct(v):"—"}</span></td>)}<td><strong>{pct(avg)}</strong></td></tr>;})}</tbody></table></div><div className="table-legend"><span><i className="empty"/>Available</span><span><i className="used"/>Allocated</span><span><i className="high"/>85–100%</span><span><i className="over"/>Over 100%</span></div></div>
+  const [query,setQuery]=useState("");
+  const [deptFilter,setDeptFilter]=useState<"ALL"|DeptId>("ALL");
+  const [showAdd,setShowAdd]=useState(false);
+  const filtered=people.filter(person=>{
+    const matchesDept=deptFilter==="ALL"||person.dept===deptFilter;
+    const q=query.trim().toLowerCase();
+    const matchesSearch=!q||`${person.name} ${person.dept} ${person.title} ${person.location}`.toLowerCase().includes(q);
+    return matchesDept&&matchesSearch;
+  });
+  return <>
+    <div className="page-title"><span className="eyebrow">People utilization</span><h1>Resources</h1><p>Monthly allocation by person. Search the team, filter by department, or add a resource directly from this view.</p></div>
+    <div className="resource-toolbar card">
+      <label className="resource-search"><SearchIcon/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search resources" aria-label="Search resources"/></label>
+      <label className="resource-filter"><span>Department</span><select value={deptFilter} onChange={e=>setDeptFilter(e.target.value as "ALL"|DeptId)}><option value="ALL">All departments</option>{departments.map(d=><option key={d.id} value={d.id}>{d.id} · {d.name}</option>)}</select></label>
+      <label className="resource-filter year-filter"><span>Year</span><select value={year} onChange={e=>setYear(Number(e.target.value))}><option value={2026}>2026</option><option value={2027}>2027</option></select></label>
+      <button className="primary resource-add" onClick={()=>setShowAdd(true)}><PlusIcon/>Add resource</button>
+    </div>
+    <div className="resource-result-count">{filtered.length} of {people.length} resources</div>
+    <div className="resource-table-card card"><div className="resource-table-scroll"><table className="resource-table"><thead><tr><th>Resource</th>{monthNames.map(m=><th key={m}>{m}</th>)}<th>Avg.</th></tr></thead><tbody>{filtered.map(person=>{const values=monthNames.map((_,m)=>allocationFor(person.id,yearOffset+m));const avg=values.reduce((s,v)=>s+v,0)/12;return <tr key={person.id}><td><strong>{person.name}</strong><small>{person.dept} · {person.title}</small></td>{values.map((v,i)=><td key={i}><span className={`alloc-cell ${v>1?"over":v>.85?"high":v>0?"used":"empty"}`}>{v?pct(v):"—"}</span></td>)}<td><strong>{pct(avg)}</strong></td></tr>;})}{filtered.length===0&&<tr><td className="resource-empty" colSpan={14}>No resources match this search or department filter.</td></tr>}</tbody></table></div><div className="table-legend"><span><i className="empty"/>Available</span><span><i className="used"/>Allocated</span><span><i className="high"/>85–100%</span><span><i className="over"/>Over 100%</span></div></div>
+    {showAdd&&<AddPersonDrawer onClose={()=>setShowAdd(false)} onAdd={person=>{onAdd(person);setShowAdd(false);}}/>}
   </>;
 }
 
+function SearchIcon(){return <svg className="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>}
+function PlusIcon(){return <svg className="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>}
+
+function AddPersonDrawer({onClose,onAdd}:{onClose:()=>void;onAdd:(person:Person)=>void}){
+  const [name,setName]=useState("");
+  const [dept,setDept]=useState<DeptId>("PSE");
+  const [title,setTitle]=useState("");
+  const [location,setLocation]=useState("");
+  const save=()=>{
+    if(!name.trim()) return;
+    onAdd({id:`U${Date.now()}`,name:name.trim(),dept,title:title.trim()||`${dept} Resource`,location:location.trim()||"—"});
+  };
+  return <div className="drawer-backdrop" onMouseDown={onClose}><aside className="drawer" onMouseDown={e=>e.stopPropagation()}>
+    <div className="drawer-head"><div><span className="eyebrow">Team capacity</span><h2>Add resource</h2></div><button className="close-btn" onClick={onClose}>×</button></div>
+    <div className="drawer-summary"><span className="dept-chip large">{dept}</span><div><strong>{name.trim()||"New resource"}</strong><small>{title.trim()||"Define the resource details below"}</small></div></div>
+    <div className="form-stack">
+      <label>Resource name<input value={name} onChange={e=>setName(e.target.value)} placeholder="Employee name" autoFocus/></label>
+      <label>Department<select value={dept} onChange={e=>setDept(e.target.value as DeptId)}>{departments.map(d=><option key={d.id} value={d.id}>{d.id} · {d.name}</option>)}</select></label>
+      <label>Title<input value={title} onChange={e=>setTitle(e.target.value)} placeholder="Role / title"/></label>
+      <label>Location<input value={location} onChange={e=>setLocation(e.target.value)} placeholder="City, State"/></label>
+    </div>
+    <div className="drawer-actions"><button className="secondary" onClick={onClose}>Cancel</button><button className="primary" disabled={!name.trim()} onClick={save}>Add resource</button></div>
+  </aside></div>;
+}
+
 function CapacityView({rows}:{rows:{dept:Department;team:number;monthly:number[];peak:number}[]}){
-  return <><div className="page-title"><span className="eyebrow">Portfolio demand</span><h1>Capacity</h1><p>Monthly forecast across all projects compared with the people currently available in each department.</p></div><div className="capacity-list">{rows.map(row=>{const sustainable=row.team*row.dept.target;const gap=Math.max(0,row.peak-sustainable);const hires=gap>=.5?Math.ceil(gap):0;const scale=Math.max(row.team,row.peak,1);return <article className="card capacity-card" key={row.dept.id}><div className="capacity-head"><span className="dept-chip">{row.dept.id}</span><div><h2>{row.dept.name}</h2><p>{row.team} people · {Math.round(row.dept.target*100)}% sustainable target</p></div>{hires?<span className="hire-pill">+{hires} hire{hires>1?"s":""}</span>:<span className="status green">Covered</span>}</div><div className="capacity-bars">{row.monthly.map((v,i)=><div className="capacity-month" key={i}><div className="capacity-track"><i className="capacity-bg" style={{height:`${row.team/scale*100}%`}}/><i className={v>sustainable?"capacity-demand over":"capacity-demand"} style={{height:`${v/scale*100}%`}}/></div><small>{monthNames[i%12]}{i===0||i===12?<b>{timelineMonths[i].year}</b>:null}</small></div>)}</div></article>;})}</div></>;
+  const axisLabel=(value:number)=>Number.isInteger(value)?String(value):value.toFixed(1);
+  return <><div className="page-title"><span className="eyebrow">Portfolio demand</span><h1>Capacity</h1><p>Monthly forecast across all projects compared with the people currently available in each department. Vertical scale is shown in FTE.</p></div><div className="capacity-list">{rows.map(row=>{const sustainable=row.team*row.dept.target;const gap=Math.max(0,row.peak-sustainable);const hires=gap>=.5?Math.ceil(gap):0;const axisMax=Math.max(1,Math.ceil(Math.max(row.team,row.peak)));const ticks=[axisMax,axisMax*.75,axisMax*.5,axisMax*.25,0];return <article className="card capacity-card" key={row.dept.id}><div className="capacity-head"><span className="dept-chip">{row.dept.id}</span><div><h2>{row.dept.name}</h2><p>{row.team} people · {Math.round(row.dept.target*100)}% sustainable target</p></div>{hires><span className="hire-pill">+{hires} hire{hires>1?"s":""}</span>:<span className="status green">Covered</span>}</div><div className="capacity-chart"><div className="capacity-axis"><span className="axis-title">FTE</span><div className="axis-ticks">{ticks.map((t,i)=><span key={i}>{axisLabel(t)}</span>)}</div></div><div className="capacity-bars">{row.monthly.map((v,i)=><div className="capacity-month" key={i}><div className="capacity-track"><i className="capacity-bg" style={{height:`${row.team/axisMax*100}%`}}/><i className={v>sustainable?"capacity-demand over":"capacity-demand"} style={{height:`${v/axisMax*100}%`}}/></div><small>{monthNames[i%12]}{i===0||i===12?<b>{timelineMonths[i].year}</b>:null}</small></div>)}</div></div></article>;})}</div></>;
 }
 
 function ProjectsView({selected,onPlan}:{selected:string;onPlan:(id:string)=>void}){
