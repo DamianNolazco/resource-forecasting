@@ -19,84 +19,23 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
-          import re
-
+          import base64, re
+          resources = base64.b64decode('ZnVuY3Rpb24gUmVzb3VyY2VzVmlldyh7eWVhcixzZXRZZWFyLGFsbG9jYXRpb25Gb3IscGVvcGxlLG9uQWRkfTp7eWVhcjpudW1iZXI7c2V0WWVhcjooeTpudW1iZXIpPT52b2lkO2FsbG9jYXRpb25Gb3I6KHBlcnNvbklkOnN0cmluZyxtb250aEluZGV4Om51bWJlcik9Pm51bWJlcjtwZW9wbGU6UGVyc29uW107b25BZGQ6KHBlcnNvbjpQZXJzb24pPT52b2lkfSl7CiAgY29uc3QgeWVhck9mZnNldD0oeWVhci1TVEFSVF9ZRUFSKSoxMjsKICBjb25zdCBbcXVlcnksc2V0UXVlcnldPXVzZVN0YXRlKCIiKTsKICBjb25zdCBbZGVwdEZpbHRlcixzZXREZXB0RmlsdGVyXT11c2VTdGF0ZTx...TRUNCATED...').decode()
+          css_extra = base64.b64decode('LnVpLWljb257d2lkdGg6MTdweDtoZWlnaHQ6MTdweDtmaWxsOm5vbmU7c3Ryb2tlOmN1cnJlbnRDb2xvcjtzdHJva2Utd2lkdGg6MS44O3N0cm9rZS1saW5lY2FwOnJvdW5kO3N0cm9rZS1saW5lam9pbjpyb3VuZDtmbGV4Om5vbmV9LnJlc291cmNlLXRvb2xiYXJ7ZGlzcGxheTpmbGV4O2FsaWduLWl0ZW1zOmZsZXgtZW5kO2dhcDoxMHB4O3BhZGRpbmc6MTJweCAxNHB4O21hcmdpbi1ib3R0b206OHB4O2ZsZXgtd3JhcDp3cmFwfS5yZXNvdXJjZS1zZWFyY2h7aGVpZ2h0OjQwcHg7bWluLXdpZHRoOjI3MHB4O2ZsZXg6MTtkaXNwbGF5OmZsZXg7YWxpZ24taXRlbXM6Y2VudGVyO2dhcDo5cHg7Ym9yZGVyOjFweCBzb2xpZCAjZGZkZGQ2O2JhY2tncm91bmQ6I2ZmZjtiZ...TRUNCATED...').decode()
           page = Path('app/page.tsx')
           text = page.read_text()
-
           text = text.replace('const people:Person[] = [', 'const seedPeople:Person[] = [', 1)
           text = text.replace('  const [bars,setBars] = useState<PlanBar[]>(seedBars);', '  const [bars,setBars] = useState<PlanBar[]>(seedBars);\n  const [people,setPeople] = useState<Person[]>(seedPeople);', 1)
           text = text.replace('  }),[bars]);', '  }),[bars,people]);', 1)
           text = text.replace('{view==="resources"&&<ResourcesView year={resourceYear} setYear={setResourceYear} allocationFor={allocationFor}/>} ', '{view==="resources"&&<ResourcesView year={resourceYear} setYear={setResourceYear} allocationFor={allocationFor} people={people} onAdd={person=>setPeople(current=>[...current,person])}/>} ', 1)
           text = text.replace('{selectedBar&&<BarDrawer bar={selectedBar}', '{selectedBar&&<BarDrawer bar={selectedBar} people={people}', 1)
           text = text.replace('function BarDrawer({bar,onClose,onUpdate,onDelete}:{bar:PlanBar;onClose:()=>void;onUpdate:(patch:Partial<PlanBar>)=>void;onDelete:()=>void}){', 'function BarDrawer({bar,people,onClose,onUpdate,onDelete}:{bar:PlanBar;people:Person[];onClose:()=>void;onUpdate:(patch:Partial<PlanBar>)=>void;onDelete:()=>void}){', 1)
-
-          resources = r'''function ResourcesView({year,setYear,allocationFor,people,onAdd}:{year:number;setYear:(y:number)=>void;allocationFor:(personId:string,monthIndex:number)=>number;people:Person[];onAdd:(person:Person)=>void}){
-  const yearOffset=(year-START_YEAR)*12;
-  const [query,setQuery]=useState("");
-  const [deptFilter,setDeptFilter]=useState<"ALL"|DeptId>("ALL");
-  const [showAdd,setShowAdd]=useState(false);
-  const filtered=people.filter(person=>{
-    const matchesDept=deptFilter==="ALL"||person.dept===deptFilter;
-    const q=query.trim().toLowerCase();
-    const matchesSearch=!q||`${person.name} ${person.dept} ${person.title} ${person.location}`.toLowerCase().includes(q);
-    return matchesDept&&matchesSearch;
-  });
-  return <>
-    <div className="page-title"><span className="eyebrow">People utilization</span><h1>Resources</h1><p>Monthly allocation by person. Search the team, filter by department, or add a resource directly from this view.</p></div>
-    <div className="resource-toolbar card">
-      <label className="resource-search"><SearchIcon/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search resources" aria-label="Search resources"/></label>
-      <label className="resource-filter"><span>Department</span><select value={deptFilter} onChange={e=>setDeptFilter(e.target.value as "ALL"|DeptId)}><option value="ALL">All departments</option>{departments.map(d=><option key={d.id} value={d.id}>{d.id} · {d.name}</option>)}</select></label>
-      <label className="resource-filter year-filter"><span>Year</span><select value={year} onChange={e=>setYear(Number(e.target.value))}><option value={2026}>2026</option><option value={2027}>2027</option></select></label>
-      <button className="primary resource-add" onClick={()=>setShowAdd(true)}><PlusIcon/>Add resource</button>
-    </div>
-    <div className="resource-result-count">{filtered.length} of {people.length} resources</div>
-    <div className="resource-table-card card"><div className="resource-table-scroll"><table className="resource-table"><thead><tr><th>Resource</th>{monthNames.map(m=><th key={m}>{m}</th>)}<th>Avg.</th></tr></thead><tbody>{filtered.map(person=>{const values=monthNames.map((_,m)=>allocationFor(person.id,yearOffset+m));const avg=values.reduce((s,v)=>s+v,0)/12;return <tr key={person.id}><td><strong>{person.name}</strong><small>{person.dept} · {person.title}</small></td>{values.map((v,i)=><td key={i}><span className={`alloc-cell ${v>1?"over":v>.85?"high":v>0?"used":"empty"}`}>{v?pct(v):"—"}</span></td>)}<td><strong>{pct(avg)}</strong></td></tr>;})}{filtered.length===0&&<tr><td className="resource-empty" colSpan={14}>No resources match this search or department filter.</td></tr>}</tbody></table></div><div className="table-legend"><span><i className="empty"/>Available</span><span><i className="used"/>Allocated</span><span><i className="high"/>85–100%</span><span><i className="over"/>Over 100%</span></div></div>
-    {showAdd&&<AddPersonDrawer onClose={()=>setShowAdd(false)} onAdd={person=>{onAdd(person);setShowAdd(false);}}/>}
-  </>;
-}
-
-function SearchIcon(){return <svg className="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>}
-function PlusIcon(){return <svg className="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>}
-
-function AddPersonDrawer({onClose,onAdd}:{onClose:()=>void;onAdd:(person:Person)=>void}){
-  const [name,setName]=useState("");
-  const [dept,setDept]=useState<DeptId>("PSE");
-  const [title,setTitle]=useState("");
-  const [location,setLocation]=useState("");
-  const save=()=>{
-    if(!name.trim()) return;
-    onAdd({id:`U${Date.now()}`,name:name.trim(),dept,title:title.trim()||`${dept} Resource`,location:location.trim()||"—"});
-  };
-  return <div className="drawer-backdrop" onMouseDown={onClose}><aside className="drawer" onMouseDown={e=>e.stopPropagation()}>
-    <div className="drawer-head"><div><span className="eyebrow">Team capacity</span><h2>Add resource</h2></div><button className="close-btn" onClick={onClose}>×</button></div>
-    <div className="drawer-summary"><span className="dept-chip large">{dept}</span><div><strong>{name.trim()||"New resource"}</strong><small>{title.trim()||"Define the resource details below"}</small></div></div>
-    <div className="form-stack">
-      <label>Resource name<input value={name} onChange={e=>setName(e.target.value)} placeholder="Employee name" autoFocus/></label>
-      <label>Department<select value={dept} onChange={e=>setDept(e.target.value as DeptId)}>{departments.map(d=><option key={d.id} value={d.id}>{d.id} · {d.name}</option>)}</select></label>
-      <label>Title<input value={title} onChange={e=>setTitle(e.target.value)} placeholder="Role / title"/></label>
-      <label>Location<input value={location} onChange={e=>setLocation(e.target.value)} placeholder="City, State"/></label>
-    </div>
-    <div className="drawer-actions"><button className="secondary" onClick={onClose}>Cancel</button><button className="primary" disabled={!name.trim()} onClick={save}>Add resource</button></div>
-  </aside></div>;
-}
-
-function CapacityView({rows}:{rows:{dept:Department;team:number;monthly:number[];peak:number}[]}){
-  const axisLabel=(value:number)=>Number.isInteger(value)?String(value):value.toFixed(1);
-  return <><div className="page-title"><span className="eyebrow">Portfolio demand</span><h1>Capacity</h1><p>Monthly forecast across all projects compared with the people currently available in each department. Vertical scale is shown in FTE.</p></div><div className="capacity-list">{rows.map(row=>{const sustainable=row.team*row.dept.target;const gap=Math.max(0,row.peak-sustainable);const hires=gap>=.5?Math.ceil(gap):0;const axisMax=Math.max(1,Math.ceil(Math.max(row.team,row.peak)));const ticks=[axisMax,axisMax*.75,axisMax*.5,axisMax*.25,0];return <article className="card capacity-card" key={row.dept.id}><div className="capacity-head"><span className="dept-chip">{row.dept.id}</span><div><h2>{row.dept.name}</h2><p>{row.team} people · {Math.round(row.dept.target*100)}% sustainable target</p></div>{hires?<span className="hire-pill">+{hires} hire{hires>1?"s":""}</span>:<span className="status green">Covered</span>}</div><div className="capacity-chart"><div className="capacity-axis"><span className="axis-title">FTE</span><div className="axis-ticks">{ticks.map((t,i)=><span key={i}>{axisLabel(t)}</span>)}</div></div><div className="capacity-bars">{row.monthly.map((v,i)=><div className="capacity-month" key={i}><div className="capacity-track"><i className="capacity-bg" style={{height:`${row.team/axisMax*100}%`}}/><i className={v>sustainable?"capacity-demand over":"capacity-demand"} style={{height:`${v/axisMax*100}%`}}/></div><small>{monthNames[i%12]}{i===0||i===12?<b>{timelineMonths[i].year}</b>:null}</small></div>)}</div></div></article>;})}</div></>;
-}'''
-
           text, count = re.subn(r'function ResourcesView\(.*?\nfunction ProjectsView', resources + '\n\nfunction ProjectsView', text, count=1, flags=re.S)
           if count != 1:
               raise SystemExit('Could not replace ResourcesView/CapacityView block')
           page.write_text(text)
-
           css = Path('app/globals.css')
-          extra = r'''
-.ui-icon{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}.resource-toolbar{display:flex;align-items:flex-end;gap:10px;padding:12px 14px;margin-bottom:8px;flex-wrap:wrap}.resource-search{height:40px;min-width:270px;flex:1;display:flex;align-items:center;gap:9px;border:1px solid #dfddd6;background:#fff;border-radius:11px;padding:0 12px;color:#818681}.resource-search:focus-within{border-color:#8fd4d9;box-shadow:0 0 0 3px rgba(40,175,185,.08)}.resource-search input{border:0;outline:0;background:transparent;min-width:0;flex:1;color:#242624;font-size:11px}.resource-search input::placeholder{color:#a0a4a0}.resource-filter{display:grid;gap:4px;font-size:8px;text-transform:uppercase;letter-spacing:.07em;color:#7f847f;font-weight:750}.resource-filter select{height:40px;border:1px solid #dfddd6;background:#fff;border-radius:11px;padding:0 12px;min-width:190px;color:#242624;outline:none;font-size:10px}.resource-filter.year-filter select{min-width:96px}.resource-add{height:40px;display:flex;align-items:center;gap:7px;padding:0 14px}.resource-add .ui-icon{width:15px;height:15px}.resource-result-count{font-size:9px;color:#858a85;margin:0 3px 9px}.resource-empty{text-align:center!important;color:#8e938e!important;padding:28px!important;position:static!important;background:#fff!important}.primary:disabled{opacity:.45;cursor:not-allowed}.capacity-chart{display:grid;grid-template-columns:36px minmax(0,1fr);gap:6px;margin-top:18px}.capacity-axis{height:125px;position:relative;padding-top:4px}.axis-title{position:absolute;top:-9px;left:0;font-size:7px;font-weight:800;letter-spacing:.08em;color:#7e837e}.axis-ticks{height:100px;display:flex;flex-direction:column;justify-content:space-between;align-items:flex-end;padding-right:5px}.axis-ticks span{font-size:7px;color:#8f948f;line-height:1;transform:translateY(-2px)}.capacity-chart .capacity-bars{margin-top:0}.capacity-bars{position:relative;background:repeating-linear-gradient(to bottom,rgba(19,19,19,.045) 0,rgba(19,19,19,.045) 1px,transparent 1px,transparent 25px);border-bottom:1px solid rgba(19,19,19,.08)}
-@media(max-width:760px){.resource-toolbar{align-items:stretch}.resource-search{min-width:100%;width:100%}.resource-filter{flex:1}.resource-filter select{min-width:0;width:100%}.resource-add{width:100%;justify-content:center}.capacity-chart{grid-template-columns:30px minmax(0,1fr)}}
-'''
-          css.write_text(css.read_text() + extra)
+          css.write_text(css.read_text() + css_extra)
           PY
       - name: Commit UI updates
         run: |
