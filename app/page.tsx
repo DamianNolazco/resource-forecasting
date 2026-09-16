@@ -97,6 +97,7 @@ export default function Page(){
   const [milestones,setMilestones] = useState<Milestone[]>(seedMilestones);
   const [selectedBarId,setSelectedBarId] = useState<string|null>(null);
   const [resourceYear,setResourceYear] = useState(2026);
+  const [collapsedDepts,setCollapsedDepts] = useState<Set<DeptId>>(new Set());
   const [addDept,setAddDept] = useState<DeptId>("PSE");
   const [milestoneType,setMilestoneType] = useState<"internal"|"external">("internal");
   const [drag,setDrag] = useState<DragState>(null);
@@ -146,6 +147,7 @@ export default function Page(){
     const start=8;
     const newBar:PlanBar={id,project:projectId,dept:addDept,start,end:clamp(start+3,0,TOTAL_MONTHS-1),allocation:1};
     setBars(current=>[...current,newBar]);
+    setCollapsedDepts(current=>{const next=new Set(current);next.delete(addDept);return next;});
     setSelectedBarId(id);
   };
 
@@ -157,6 +159,12 @@ export default function Page(){
   const moveMilestone=(id:string,delta:number)=>setMilestones(current=>current.map(m=>m.id===id?{...m,month:clamp(m.month+delta,0,TOTAL_MONTHS-1)}:m));
 
   const allocationFor=(personId:string,monthIndex:number)=>bars.filter(b=>b.personId===personId&&b.start<=monthIndex&&b.end>=monthIndex).reduce((s,b)=>s+b.allocation,0);
+
+  const toggleDept=(dept:DeptId)=>setCollapsedDepts(current=>{
+    const next=new Set(current);
+    if(next.has(dept)) next.delete(dept); else next.add(dept);
+    return next;
+  });
 
   const capacityRows=useMemo(()=>departments.map(dept=>{
     const team=people.filter(p=>p.dept===dept.id).length;
@@ -212,18 +220,35 @@ export default function Page(){
                 <MilestoneLane milestones={projectMilestones.filter(m=>m.type==="external")} onMove={moveMilestone}/>
 
                 {projectBars.length===0&&<><div className="lane-label"><strong>No resources</strong><small>Add the first bar above</small></div><div className="empty-timeline">No resource forecast yet.</div></>}
-                {projectBars.map(bar=>{
-                  const person=people.find(p=>p.id===bar.personId);
-                  return <div className="resource-row" key={bar.id}>
-                    <div className="lane-label resource-label"><span className="dept-chip">{bar.dept}</span><div><strong>{person?.name||"Unassigned"}</strong><small>{pct(bar.allocation)} · {monthLabel(bar.start)} → {monthLabel(bar.end)}</small></div></div>
-                    <div className="bar-lane">
-                      <div className="month-grid-lines">{timelineMonths.map(m=><i key={m.index} className={m.month===0?"year-start":""}/>)}</div>
-                      <button className={bar.personId?"plan-bar assigned":"plan-bar forecast"} style={{left:`${bar.start/TOTAL_MONTHS*100}%`,width:`${(bar.end-bar.start+1)/TOTAL_MONTHS*100}%`}} onPointerDown={e=>beginBarDrag(e,bar.id,"move")} onClick={()=>{if(draggedRef.current){draggedRef.current=false;return;}setSelectedBarId(bar.id);}} title="Click to edit; drag to move">
-                        <span className="resize-handle left" onPointerDown={e=>beginBarDrag(e,bar.id,"left")}/>
-                        <span className="bar-text"><strong>{bar.dept} · {person?.name||"Unassigned"}</strong><small>{pct(bar.allocation)}</small></span>
-                        <span className="resize-handle right" onPointerDown={e=>beginBarDrag(e,bar.id,"right")}/>
-                      </button>
+                {departments.filter(dept=>projectBars.some(bar=>bar.dept===dept.id)).map(dept=>{
+                  const deptBars=projectBars.filter(bar=>bar.dept===dept.id);
+                  const collapsed=collapsedDepts.has(dept.id);
+                  const aggregate=timelineMonths.map(m=>deptBars.filter(bar=>bar.start<=m.index&&bar.end>=m.index).reduce((sum,bar)=>sum+bar.allocation,0));
+                  const peak=Math.max(0,...aggregate);
+                  return <div className="department-group" key={dept.id}>
+                    <div className="lane-label department-header">
+                      <button className="collapse-btn" onClick={()=>toggleDept(dept.id)} aria-label={`${collapsed?"Expand":"Collapse"} ${dept.name}`}>{collapsed?"›":"⌄"}</button>
+                      <span className="dept-chip">{dept.id}</span>
+                      <div><strong>{dept.name}</strong><small>{deptBars.length} resource{deptBars.length===1?"":"s"} · Peak {peak.toFixed(peak%1?1:0)} FTE</small></div>
                     </div>
+                    <div className={collapsed?"department-header-lane collapsed":"department-header-lane"}>
+                      <div className="month-grid-lines">{timelineMonths.map(m=><i key={m.index} className={m.month===0?"year-start":""}/>)}</div>
+                      {collapsed?<button className="aggregate-summary" onClick={()=>toggleDept(dept.id)} title={`Expand ${dept.name}`}>{aggregate.map((value,i)=><span key={i} className={value?"aggregate-cell active":"aggregate-cell"} style={value?{opacity:Math.min(.45+value*.18,1)}:undefined}>{value?<b>{value.toFixed(value%1?1:0)}</b>:null}</span>)}</button>:<div className="department-expanded-note"><span>Expanded</span><small>{deptBars.length} allocation bar{deptBars.length===1?"":"s"}</small></div>}
+                    </div>
+                    {!collapsed&&deptBars.map(bar=>{
+                      const person=people.find(p=>p.id===bar.personId);
+                      return <div className="resource-row" key={bar.id}>
+                        <div className="lane-label resource-label grouped-resource-label"><span className="group-indent"/><div><strong>{person?.name||"Unassigned"}</strong><small>{pct(bar.allocation)} · {monthLabel(bar.start)} → {monthLabel(bar.end)}</small></div></div>
+                        <div className="bar-lane grouped-resource-lane">
+                          <div className="month-grid-lines">{timelineMonths.map(m=><i key={m.index} className={m.month===0?"year-start":""}/>)}</div>
+                          <button className={bar.personId?"plan-bar assigned":"plan-bar forecast"} style={{left:`${bar.start/TOTAL_MONTHS*100}%`,width:`${(bar.end-bar.start+1)/TOTAL_MONTHS*100}%`}} onPointerDown={e=>beginBarDrag(e,bar.id,"move")} onClick={()=>{if(draggedRef.current){draggedRef.current=false;return;}setSelectedBarId(bar.id);}} title="Click to edit; drag to move">
+                            <span className="resize-handle left" onPointerDown={e=>beginBarDrag(e,bar.id,"left")}/>
+                            <span className="bar-text"><strong>{person?.name||`${bar.dept} unassigned`}</strong><small>{pct(bar.allocation)}</small></span>
+                            <span className="resize-handle right" onPointerDown={e=>beginBarDrag(e,bar.id,"right")}/>
+                          </button>
+                        </div>
+                      </div>;
+                    })}
                   </div>;
                 })}
               </div>
