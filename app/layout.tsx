@@ -1,8 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import "./planner-polish.css";
 
 export const metadata: Metadata = {
-  title: "Exotec Resource Planner",
+  title: "Nolazco Labs Resource Forecasting",
   description: "Resource forecasting, allocation, utilization and capacity planning.",
   manifest: "/manifest.webmanifest",
 };
