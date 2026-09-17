@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import "./planner-polish.css";
 
 export const metadata: Metadata = {
   title: "Nolazco Labs Resource Forecasting",
@@ -11,9 +10,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-  themeColor: "#f7f5f0",
+  themeColor: "#f6f7f8",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
