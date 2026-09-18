@@ -1,0 +1,39 @@
+RESOURCE PLANNER — WINDOWS EXE
+
+1. Extract the entire ZIP to a writable folder, such as Documents\ResourcePlanner.
+2. Keep Resource_Planner.exe and Resource_Planning_Database.xlsx together.
+3. Close the workbook in Excel, then double-click Resource_Planner.exe.
+4. Your browser opens the app at http://127.0.0.1:8765. Keep its console open.
+
+Python, Node.js and pip are not required. The app works offline.
+Changes save automatically to Excel. Wait for "Saved to Excel" before stopping.
+Press Ctrl+C in the console to stop the app. Closing the browser does not stop it.
+
+The workbook contains sample data. To transfer your existing plan, use Export
+at https://resources.nolazcolab.site, then Import in this local app.
+
+Before every save, the previous workbook is copied to backups/ beside it.
+To edit Excel directly: stop the app, edit/save/close Excel, then restart.
+Keep sheet names and row 4 headers unchanged; data begins on row 5.
+See the Guide sheet for IDs, dates, allocation percentages and department targets.
+Planning dates are January 2026 through December 2027.
+
+If saving fails, Export a JSON backup before closing or reloading the tab.
+Close Excel and Retry save for an open-workbook error. If the workbook changed
+externally, preserve your edits with Export, then Reload Excel and review it.
+Use one app and one editing tab per workbook. There is no online synchronization.
+
+To restore: stop the app, preserve the current workbook, copy a chosen backup
+into the main folder and name it Resource_Planning_Database.xlsx. Restart.
+Backups are retained until you delete them.
+
+Advanced commands in a terminal opened in this folder:
+  .\Resource_Planner.exe --check
+  .\Resource_Planner.exe --port 8766
+  .\Resource_Planner.exe --workbook "C:\Path\My_Database.xlsx"
+
+Target: 64-bit Intel/AMD Windows. No administrator access required.
+This build is unsigned; Windows or company security policy may flag it.
+On a managed work computer, follow your IT team's approval process.
+The app still uses your browser for its interface; the executable runs the
+local server and includes the Python runtime.
