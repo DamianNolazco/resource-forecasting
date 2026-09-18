@@ -13,7 +13,7 @@ it('shows project swim lanes with multiple department filters while retaining mi
  await u.click(screen.getByRole('button',{name:'Clear',exact:true}));expect(screen.getByText('Select at least one department to see allocations.')).toBeTruthy();
  await u.click(screen.getByRole('checkbox',{name:/PSE Project System/}));await u.click(screen.getByRole('checkbox',{name:/FE Field/}));
  const lane=screen.getByRole('region',{name:'Project Atlas LAX1 swim lane'});
- expect(within(lane).getByText('Employee 001')).toBeTruthy();
+ expect(within(lane).getByRole('button',{name:'Edit resource Employee 001'})).toBeTruthy();
  expect(lane.querySelector('[data-department="PSE"]')).toBeTruthy();expect(lane.querySelector('[data-department="FE"]')).toBeTruthy();expect(lane.querySelector('[data-department="HW"]')).toBeNull();
  expect(within(lane).getAllByRole('button',{name:/milestone/}).length).toBeGreaterThan(0);
  const allocation=within(lane).getAllByRole('button',{name:/Project Atlas LAX1, Employee/})[0];await u.click(allocation);expect(screen.getByRole('dialog')).toBeTruthy();await u.keyboard('{Escape}');
