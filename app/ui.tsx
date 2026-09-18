@@ -14,6 +14,7 @@ import {
   type Milestone,
   type DeptId,
 } from "../lib/planning";
+import {ResourceAvatar,preparePhoto} from "./ResourceAvatar";
 const paths: Record<string, ReactNode> = {
   timeline: (
     <>
@@ -410,14 +411,22 @@ export function PersonForm({
   onSave: (p: Person) => void;
   onAllocation: (b: PlanBar) => void;
 }) {
-  const [p, setP] = useState(value);
+  const [p, setP] = useState(value),[photoError,setPhotoError]=useState(''),[photoBusy,setPhotoBusy]=useState(false);
+  const photoRequest=useRef(0);
+  useEffect(()=>()=>{photoRequest.current++},[]);
+  const changePhoto=async(file?:File)=>{
+    if(!file)return;const request=++photoRequest.current;setPhotoBusy(true);setPhotoError('');
+    try{const photo=await preparePhoto(file);if(photoRequest.current===request)setP(old=>({...old,photo}));}
+    catch(error){if(photoRequest.current===request)setPhotoError(error instanceof Error?error.message:'Could not open this image.');}
+    finally{if(photoRequest.current===request)setPhotoBusy(false)}
+  };
   const bars = plan.bars.filter((b) => b.personId === p.id);
   return (
     <form
       className="editor-form"
       onSubmit={(e) => {
         e.preventDefault();
-        if (p.name.trim())
+        if (p.name.trim() && !photoBusy)
           onSave({
             ...p,
             name: p.name.trim(),
@@ -427,6 +436,8 @@ export function PersonForm({
       }}
     >
       <div className="form-fields">
+        <div className="photo-editor"><ResourceAvatar person={p}/><div><label>Resource picture<input aria-label="Resource picture" type="file" accept="image/jpeg,image/png,image/webp" disabled={photoBusy} onChange={e=>{void changePhoto(e.target.files?.[0]);e.target.value=''}}/></label><small>JPG, PNG or WebP · up to 8 MB · cropped to a circle</small>{p.photo&&<button type="button" className="text-button" disabled={photoBusy} onClick={()=>setP(old=>({...old,photo:undefined}))}>Use generic avatar</button>}</div></div>
+        {photoBusy&&<p role="status">Preparing photo…</p>}{photoError&&<p role="alert" className="form-warning">{photoError}</p>}
         <label>
           Full name
           <input
@@ -495,7 +506,7 @@ export function PersonForm({
         )}
       </div>
       <div className="form-footer">
-        <button className="button primary" disabled={!p.name.trim()}>
+        <button className="button primary" disabled={!p.name.trim()||photoBusy}>
           <Icon name="check" />
           Save resource
         </button>

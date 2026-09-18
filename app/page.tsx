@@ -37,7 +37,9 @@ import {
   ProjectForm,
   MilestoneForm,
 } from "./ui";
-type View = "planner" | "resources" | "capacity" | "projects";
+import {ProjectOverview} from "./ProjectOverview";
+import {ResourceAvatar} from "./ResourceAvatar";
+type View = "overview" | "planner" | "resources" | "capacity" | "projects";
 type Editor =
   | { type: "allocation"; value: PlanBar }
   | { type: "person"; value: Person }
@@ -46,6 +48,7 @@ type Editor =
   | null;
 const nav: { id: View; label: string; icon: string }[] = [
   { id: "planner", label: "Project planner", icon: "timeline" },
+  { id: "overview", label: "Project overview", icon: "timeline" },
   { id: "resources", label: "Resources", icon: "people" },
   { id: "capacity", label: "Capacity", icon: "chart" },
   { id: "projects", label: "Projects", icon: "folder" },
@@ -314,6 +317,8 @@ export default function Page() {
             <button
               key={n.id}
               className={`nav-item ${view === n.id ? "active" : ""}`}
+              aria-label={n.label}
+              title={n.label}
               onClick={() => go(n.id)}
             >
               <Icon name={n.icon} />
@@ -405,7 +410,7 @@ export default function Page() {
                       : "THE BIG PICTURE"}
               </div>
               <h1>
-                {view === "planner"
+                {view === "overview" ? "Project overview" : view === "planner"
                   ? "Project planner"
                   : view === "resources"
                     ? "Resources"
@@ -415,7 +420,7 @@ export default function Page() {
                 <span className="heading-dot">.</span>
               </h1>
               <p>
-                {view === "planner"
+                {view === "overview" ? "Projects, people and milestones across your selected departments." : view === "planner"
                   ? "The right people. The right project. The right time."
                   : view === "resources"
                     ? "See every commitment and find room for what’s next."
@@ -941,6 +946,7 @@ export default function Page() {
                   )}
                 </>
               )}
+              {view === "overview" && <ProjectOverview plan={plan} onPerson={value=>setEditor({type:"person",value})} onAllocation={value=>setEditor({type:"allocation",value})} onMilestone={value=>setEditor({type:"milestone",value})} onProject={switchProject}/>}
               {view === "resources" && (
                 <>
                   <div className="stat-grid">
@@ -1027,13 +1033,12 @@ export default function Page() {
                                 <td>
                                   <button
                                     className="person-cell"
+                                    aria-label={`Edit resource ${p.name}`}
                                     onClick={() =>
                                       setEditor({ type: "person", value: p })
                                     }
                                   >
-                                    <span className="avatar">
-                                      {initials(p.name)}
-                                    </span>
+                                    <ResourceAvatar person={p}/>
                                     <span>
                                       <strong>{p.name}</strong>
                                       <small>

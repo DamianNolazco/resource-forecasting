@@ -9,6 +9,7 @@ export type Project = {
 };
 export type Department = { id: DeptId; name: string; target: number };
 export type Person = {
+  photo?: string;
   id: string;
   name: string;
   dept: DeptId;
@@ -422,6 +423,7 @@ export function validPlan(value: unknown): value is Plan {
       (v) =>
         str(v.name) &&
         depts.has(v.dept) &&
+        (v.photo === undefined || (typeof v.photo === "string" && v.photo.length <= 80000 && /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/]+={0,2}$/.test(v.photo))) &&
         typeof v.title === "string" &&
         typeof v.location === "string",
     )
