@@ -292,7 +292,7 @@ export default function Page() {
     go("planner");
   };
   return (
-    <div className="app-shell">
+    <div className={`app-shell${view === "overview" ? " overview-workspace" : ""}`}>
       <aside className="sidebar">
         <a
           className="brand"

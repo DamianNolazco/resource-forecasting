@@ -2416,3 +2416,53 @@ input::placeholder {
 .overview-no-milestones{color:#a5adb0;font-size:10px}
 .overview-panel .panel-footer{background:white;border-top:0;padding:15px 4px;color:#929c9f;font-size:10px}
 @media(max-width:760px){.overview-grid{--label-width:180px}.overview-panel .panel-toolbar{padding:12px 4px}.overview-project-link{font-size:12px}.overview-person strong{font-size:10px}.overview-key{font-size:10px}.overview-filters{padding:14px 4px}.overview-project-summary{padding:12px}}
+
+/* The overview owns the viewport; only its timeline is a scrolling surface. */
+html:has(.overview-workspace),body:has(.overview-workspace){height:100%;overflow:hidden}
+.overview-workspace{height:100dvh;overflow:hidden}
+.overview-workspace>main{height:100%;display:flex;flex-direction:column;overflow:hidden}
+.overview-workspace .topbar{flex:0 0 auto}
+.overview-workspace .content{display:flex;flex-direction:column;flex:1;min-height:0;width:100%;margin:0 auto;padding-top:20px;padding-bottom:12px;overflow:hidden}
+.overview-workspace .page-heading{flex:0 0 auto;margin-bottom:16px}
+.overview-workspace .overview-panel{display:flex;flex-direction:column;flex:1;min-height:0;margin:0}
+.overview-panel>.panel-toolbar,.overview-panel>.overview-filters,.overview-panel>.overview-key,.overview-panel>.panel-footer{flex:0 0 auto}
+.overview-workspace .overview-scroll{flex:1;min-height:0;max-height:none;overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable}
+.overview-workspace .workspace-footer{flex:0 0 auto;margin-top:10px}
+.overview-project-body.is-collapsed,.overview-print-header,.overview-print-axis{display:none}
+.overview-export{white-space:nowrap}
+@media(max-width:760px){
+ .overview-workspace>main{height:calc(100dvh - 62px)}
+ .overview-workspace .content{padding:12px 12px 6px}
+ .overview-workspace .page-heading{margin-bottom:8px}
+ .overview-workspace .page-heading p,.overview-workspace .eyebrow,.overview-workspace .heading-actions,.overview-workspace .workspace-footer{display:none}
+ .overview-panel .panel-toolbar{flex-wrap:wrap;gap:8px}
+ .overview-panel .toolbar-right{flex:1;justify-content:space-between}
+ .overview-panel .toolbar-right>span,.overview-panel .panel-footer>span:last-child{display:none}
+ .overview-panel .search{max-width:none;width:100%}
+ .overview-filters{padding:8px 4px}.overview-filters legend{padding-bottom:6px}
+ .overview-key{padding-bottom:8px}.overview-panel .panel-footer{padding:8px 4px}
+}
+@media(max-height:650px) and (min-width:761px){
+ .overview-workspace .content{padding-top:10px}
+ .overview-workspace .page-heading{margin-bottom:6px}
+ .overview-workspace .page-heading p,.overview-workspace .eyebrow,.overview-workspace .workspace-footer{display:none}
+ .overview-workspace .overview-filters{padding:8px 4px}
+ .overview-workspace .overview-key{padding-bottom:8px}
+}
+@media print{
+ html:has(.overview-workspace),body:has(.overview-workspace){height:auto!important;overflow:visible!important;background:#fff}
+ body:has(.overview-workspace){print-color-adjust:exact;-webkit-print-color-adjust:exact}
+ .overview-workspace,.overview-workspace>main,.overview-workspace .content,.overview-workspace .overview-panel,.overview-workspace .overview-scroll{display:block!important;height:auto!important;max-height:none!important;min-height:0!important;overflow:visible!important;margin:0!important;padding:0!important;width:100%!important}
+ .overview-workspace .sidebar,.overview-workspace .topbar,.overview-workspace .page-heading,.overview-workspace .workspace-footer,.overview-workspace .toast,.overview-workspace .drawer-backdrop,.overview-panel>.panel-toolbar,.overview-panel>.overview-filters,.overview-panel>.overview-key,.overview-panel>.panel-footer,.overview-grid>.overview-axis,.overview-collapse{display:none!important}
+ .overview-print-header{display:block;margin:0 0 16px}
+ .overview-print-header h1{font-size:22px}.overview-print-header p{font-size:11px;margin-top:6px;color:#56656b}
+ .overview-grid{min-width:0!important;width:100%;--label-width:180px}
+ .overview-print-axis{display:grid;position:static;break-after:avoid}
+ .overview-label{position:static;box-shadow:none}
+ .overview-project-body.is-collapsed{display:block}
+ .overview-project{break-inside:avoid-page;padding-bottom:12px}
+ .overview-project-heading{break-after:avoid}
+ .overview-row{break-inside:avoid}
+ .overview-person strong,.overview-bar b{font-size:10px}
+ .overview-today{display:none}
+}

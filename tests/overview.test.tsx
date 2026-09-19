@@ -18,7 +18,7 @@ it('shows project swim lanes with multiple department filters while retaining mi
  expect(within(lane).getAllByRole('button',{name:/milestone/}).length).toBeGreaterThan(0);
  const allocation=within(lane).getAllByRole('button',{name:/Project Atlas LAX1, Employee/})[0];await u.click(allocation);expect(screen.getByRole('dialog')).toBeTruthy();await u.keyboard('{Escape}');
  await u.selectOptions(screen.getByLabelText('Overview horizon'),'2027');
- await u.click(screen.getByRole('button',{name:'Collapse Project Atlas LAX1'}));expect(within(lane).queryByText('Employee 001')).toBeNull();
+ await u.click(screen.getByRole('button',{name:'Collapse Project Atlas LAX1'}));expect(lane.querySelector('.overview-project-body')?.hasAttribute('hidden')).toBe(true);
 });
 it('keeps overlapping assignments visible within one person lane and includes unassigned demand',()=>{
  const person=initialPlan.people[0];const bars=[{id:'a',project:'P1',dept:person.dept,personId:person.id,start:0,end:4,allocation:1},{id:'b',project:'P1',dept:person.dept,personId:person.id,start:4,end:6,allocation:.5},{id:'c',project:'P1',dept:person.dept,start:7,end:9,allocation:1}];
@@ -33,4 +33,20 @@ it('updates resource pictures, persists them across reloads, and resets to a gen
 });
 it('imports old plans and safe inline pictures but rejects remote and oversized photo payloads',()=>{
  expect(validPlan(initialPlan)).toBe(true);const plan=structuredClone(initialPlan);plan.people[0].photo='data:image/jpeg;base64,/9j/AAAA';expect(validPlan(plan)).toBe(true);plan.people[0].photo='https://example.com/tracker.jpg';expect(validPlan(plan)).toBe(false);plan.people[0].photo='data:image/jpeg;base64,'+'a'.repeat(80000);expect(validPlan(plan)).toBe(false);
+});
+
+it('exports the filtered horizon with collapsed project contents retained for print',async()=>{
+ const print=vi.spyOn(window,'print').mockImplementation(()=>{});
+ const u=userEvent.setup();render(<Page/>);await screen.findByRole('heading',{name:'Resource timeline'});
+ await u.click(screen.getByRole('button',{name:'Project overview',exact:true}));
+ await u.type(screen.getByLabelText('Search overview projects'),'Atlas');
+ await u.selectOptions(screen.getByLabelText('Overview horizon'),'2027');
+ await u.click(screen.getByRole('button',{name:'Collapse Project Atlas LAX1'}));
+ await u.click(screen.getByRole('button',{name:'Export PDF'}));expect(print).toHaveBeenCalledOnce();
+ const lane=screen.getByRole('region',{name:'Project Atlas LAX1 swim lane'});
+ expect(lane.querySelectorAll('.overview-project-body .overview-row').length).toBeGreaterThan(0);
+ expect(document.querySelector('.overview-print-header')?.textContent).toContain('2027');
+ expect(document.querySelector('.overview-workspace')).toBeTruthy();
+ await u.click(screen.getByRole('button',{name:'Clear',exact:true}));expect(screen.getByRole('button',{name:'Export PDF'}).hasAttribute('disabled')).toBe(true);
+ await u.click(screen.getByRole('button',{name:'Resources',exact:true}));expect(document.querySelector('.overview-workspace')).toBeNull();
 });
