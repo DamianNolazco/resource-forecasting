@@ -9,6 +9,7 @@ import {
 import {
   initialPlan,
   STORAGE_KEY,
+  LEGACY_STORAGE_KEYS,
   departments,
   timelineMonths,
   monthNames,
@@ -61,7 +62,7 @@ export default function Page() {
     [saveState, setSaveState] = useState("Loading plan…"),
     [storageBlocked, setStorageBlocked] = useState(false);
   const [view, setView] = useState<View>("planner"),
-    [projectId, setProjectId] = useState("P1"),
+    [projectId, setProjectId] = useState("G-IAH"),
     [editor, setEditor] = useState<Editor>(null),
     [notice, setNotice] = useState("");
   const [undo, setUndo] = useState<Plan | null>(null),
@@ -95,6 +96,7 @@ export default function Page() {
   const focusMonth = clamp(currentMonth, 0, 23);
   useEffect(() => {
     try {
+      LEGACY_STORAGE_KEYS.forEach((key) => localStorage.removeItem(key));
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
@@ -102,7 +104,7 @@ export default function Page() {
         setPlan(parsed);
       }
       setSaveState(
-        raw ? "Saved in this browser" : "Sample plan · saved locally",
+        raw ? "Saved in this browser" : "Staffing plan · saved locally",
       );
     } catch {
       setStorageBlocked(true);
@@ -822,7 +824,7 @@ export default function Page() {
                                         </span>
                                         <span>
                                           <strong>
-                                            {person?.name || "Unassigned"}
+                                            {person?.name || b.label || "Unassigned"}
                                           </strong>
                                           <small>
                                             {pct(b.allocation)} allocation{" "}
@@ -838,7 +840,7 @@ export default function Page() {
                                       <div className="bar-track grid-track">
                                         <Today month={currentMonth} />
                                         <button
-                                          aria-label={`Edit ${person?.name || "unassigned"} ${b.dept} allocation`}
+                                          aria-label={`Edit ${person?.name || b.label || "unassigned"} ${b.dept} allocation`}
                                           className={`plan-bar ${person ? "assigned" : "forecast"} ${over ? "conflict" : ""}`}
                                           style={{
                                             left: `${(b.start / 24) * 100}%`,
@@ -857,7 +859,7 @@ export default function Page() {
                                               value: b,
                                             });
                                           }}
-                                          title={`${person?.name || "Unassigned"} · ${pct(b.allocation)} · ${monthLabel(b.start)} – ${monthLabel(b.end)}`}
+                                          title={`${person?.name || b.label || "Unassigned"} · ${pct(b.allocation)} · ${monthLabel(b.start)} – ${monthLabel(b.end)}`}
                                         >
                                           <span
                                             className="resize-handle left"
@@ -866,7 +868,7 @@ export default function Page() {
                                             }
                                           />
                                           <span className="bar-name">
-                                            {person?.name || "Unassigned"}
+                                            {person?.name || b.label || "Unassigned"}
                                           </span>
                                           <span className="bar-percent">
                                             {pct(b.allocation)}

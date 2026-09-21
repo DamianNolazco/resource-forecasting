@@ -15,15 +15,13 @@ const start = async () => {
   await screen.findByRole("heading", { name: "Resource timeline" });
   return result;
 };
-it("saves an allocation, shows cross-project conflict, persists after remount, and supports undo", async () => {
+it("saves an unassigned staffing allocation, persists after remount, and supports undo", async () => {
   const u = userEvent.setup();
   const rendered = await start();
   await u.click(
     screen.getByRole("button", { name: "Allocation", exact: true }),
   );
-  await u.selectOptions(screen.getByLabelText("Assigned resource"), "U1");
   await u.click(screen.getByRole("button", { name: "50%", exact: true }));
-  expect(screen.getByRole("status").textContent).toContain("150%");
   await u.click(screen.getByRole("button", { name: "Save allocation" }));
   expect(screen.queryByRole("dialog")).toBeNull();
   await waitFor(() =>
@@ -38,21 +36,21 @@ it("saves an allocation, shows cross-project conflict, persists after remount, a
     ),
   );
   await u.click(
-    screen.getByRole("button", { name: "Edit Employee 001 PSE allocation" }),
+    screen.getAllByRole("button", { name: "Edit Skypod FE allocation" })[0],
   );
   await u.click(screen.getByRole("button", { name: "75%", exact: true }));
   await u.click(screen.getByRole("button", { name: "Save allocation" }));
   await waitFor(() =>
     expect(
       JSON.parse(localStorage.getItem(STORAGE_KEY)!).bars.find(
-        (b: any) => b.id === "B2",
+        (bar: any) => bar.id === "G-SP-2",
       ).allocation,
     ).toBe(0.75),
   );
   rendered.unmount();
   await start();
   await u.click(
-    screen.getByRole("button", { name: "Edit Employee 001 PSE allocation" }),
+    screen.getAllByRole("button", { name: "Edit Skypod FE allocation" })[0],
   );
   expect(
     (screen.getByLabelText("Allocation percentage") as HTMLInputElement).value,
@@ -104,18 +102,16 @@ it("creates a resource and project, filters resources by year and department, an
 it("moves and resizes allocations without losing duration or exceeding the horizon", async () => {
   const u = userEvent.setup();
   await start();
-  const bar = screen.getByRole("button", {
-    name: "Edit Employee 001 PSE allocation",
-  });
+  const bar = screen.getAllByRole("button", { name: "Edit Skypod FE allocation" })[0];
   fireEvent.pointerDown(bar, { button: 0, clientX: 300 });
   fireEvent.pointerMove(window, { clientX: 380 });
   fireEvent.pointerUp(window);
   await waitFor(() => {
     const b = JSON.parse(localStorage.getItem(STORAGE_KEY)!).bars.find(
-      (b: any) => b.id === "B2",
+      (b: any) => b.id === "G-SP-2",
     );
-    expect(b.start).toBe(9);
-    expect(b.end).toBe(15);
+    expect(b.start).toBe(12);
+    expect(b.end).toBe(20);
   });
   await u.click(screen.getByRole("button", { name: "Undo last change" }));
   fireEvent.pointerDown(bar.querySelector(".resize-handle.right")!, {
@@ -126,13 +122,13 @@ it("moves and resizes allocations without losing duration or exceeding the horiz
   fireEvent.pointerUp(window);
   await waitFor(() => {
     const b = JSON.parse(localStorage.getItem(STORAGE_KEY)!).bars.find(
-      (b: any) => b.id === "B2",
+      (b: any) => b.id === "G-SP-2",
     );
-    expect(b.start).toBe(7);
+    expect(b.start).toBe(10);
     expect(b.end).toBe(23);
   });
 });
-it("shows department charts and accurately flags PSE hiring need", async () => {
+it("shows department charts and accurately flags FE hiring need", async () => {
   const u = userEvent.setup();
   await start();
   await u.click(screen.getByRole("button", { name: "Capacity", exact: true }));
@@ -140,9 +136,9 @@ it("shows department charts and accurately flags PSE hiring need", async () => {
     screen.getByRole("heading", { name: "Demand & capacity." }),
   ).toBeTruthy();
   const card = screen
-    .getByRole("heading", { name: "Project System Engineers" })
+    .getByRole("heading", { name: "Field Engineers" })
     .closest("article")!;
-  expect(within(card).getByText("+3 hires at 85%")).toBeTruthy();
+  expect(within(card).getByText("+22 hires at 85%")).toBeTruthy();
 });
 it("does not overwrite invalid saved data and closes the drawer with Escape", async () => {
   localStorage.setItem(STORAGE_KEY, "broken data");

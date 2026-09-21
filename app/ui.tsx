@@ -253,7 +253,7 @@ export function AllocationForm({
     );
   const patch = (p: Partial<PlanBar>) => setB((v) => ({ ...v, ...p }));
   const amount = Number(allocation) / 100;
-  const candidate = { ...b, allocation: amount };
+  const candidate = { ...b, allocation: amount, label: b.label?.trim() || undefined };
   const other = plan.bars.filter((v) => v.id !== b.id);
   const projected = Math.max(
     0,
@@ -277,7 +277,7 @@ export function AllocationForm({
           <strong>
             {b.personId
               ? plan.people.find((p) => p.id === b.personId)?.name
-              : "Unassigned demand"}
+              : b.label || "Unassigned demand"}
           </strong>
           <small>
             {monthLabel(b.start)} — {monthLabel(b.end)} · {b.end - b.start + 1}{" "}
@@ -298,6 +298,16 @@ export function AllocationForm({
               </option>
             ))}
           </select>
+        </label>
+        <label>
+          Workstream / system
+          <input
+            aria-label="Workstream / system"
+            value={b.label || ""}
+            onChange={(e) => patch({ label: e.target.value || undefined })}
+            placeholder="e.g. Skypod"
+          />
+          <small>Use this to distinguish system-level staffing demand.</small>
         </label>
         <label>
           Department

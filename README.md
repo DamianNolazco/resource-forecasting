@@ -19,7 +19,7 @@ npm run build
 - Portfolio: create/edit projects and review project demand.
 - Persistence: versioned browser local storage, JSON export/import with validation, one-step undo.
 
-The initial projects and employees are sample data. There is no shared database, authentication, or cross-device synchronization in this version. Export a JSON backup before clearing browser storage. Invalid saved data is preserved and automatic writes pause until a valid plan is imported.
+The app starts with the G IAH, K SAV, and C MLK commissioning staffing forecast. Resource names are intentionally empty until real people are added, and system demand is preloaded as unassigned Field Engineering FTE. This seed update clears the prior demo-data browser keys once. There is no shared database, authentication, or cross-device synchronization in this version. Export a JSON backup before clearing browser storage. Invalid saved data is preserved and automatic writes pause until a valid plan is imported.
 
 ## Calculation rules
 

@@ -37,7 +37,10 @@ describe("forecast correctness", () => {
   });
   it("uses target-adjusted capacity when estimating hires, including fractional gaps", () => {
     const d = departments.find((d) => d.id === "PSE")!;
-    const people = initialPlan.people.filter((p) => p.dept === "PSE");
+    const people = [
+      { id: "T1", name: "Test 1", dept: "PSE" as const, title: "", location: "" },
+      { id: "T2", name: "Test 2", dept: "PSE" as const, title: "", location: "" },
+    ];
     const bars: PlanBar[] = [
       {
         id: "a",
