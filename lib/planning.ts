@@ -23,6 +23,7 @@ export type PlanBar = {
   start: number;
   end: number;
   allocation: number;
+  label?: string;
   personId?: string;
 };
 export type Milestone = {
@@ -67,280 +68,87 @@ export const departments: Department[] = [
 
 export const seedProjects: Project[] = [
   {
-    id: "P1",
-    name: "Project Atlas LAX1",
-    code: "LAX1",
-    customer: "Customer A",
-    location: "Los Angeles, CA",
-    status: "Active",
-  },
-  {
-    id: "P2",
-    name: "Project Beacon DFW1",
-    code: "DFW1",
-    customer: "Customer B",
-    location: "Fort Worth, TX",
-    status: "Active",
-  },
-  {
-    id: "P3",
-    name: "Project Cedar ATL1",
-    code: "ATL1",
-    customer: "Customer C",
-    location: "Atlanta, GA",
+    id: "G-IAH",
+    name: "G IAH",
+    code: "G IAH",
+    customer: "",
+    location: "",
     status: "Planning",
   },
   {
-    id: "P4",
-    name: "Project Delta EWR1",
-    code: "EWR1",
-    customer: "Customer D",
-    location: "Newark, NJ",
+    id: "K-SAV",
+    name: "K SAV",
+    code: "K SAV",
+    customer: "",
+    location: "",
+    status: "Planning",
+  },
+  {
+    id: "C-MLK",
+    name: "C MLK",
+    code: "C MLK",
+    customer: "",
+    location: "",
     status: "Planning",
   },
 ];
 
-export const seedPeople: Person[] = [
-  {
-    id: "U1",
-    name: "Employee 001",
-    dept: "PSE",
-    title: "Project System Engineer",
-    location: "Atlanta, GA",
-  },
-  {
-    id: "U2",
-    name: "Employee 002",
-    dept: "PSE",
-    title: "Project System Engineer",
-    location: "Houston, TX",
-  },
-  {
-    id: "U3",
-    name: "Employee 003",
-    dept: "FE",
-    title: "Field Engineer",
-    location: "Atlanta, GA",
-  },
-  {
-    id: "U4",
-    name: "Employee 004",
-    dept: "FE",
-    title: "Field Engineer",
-    location: "Chicago, IL",
-  },
-  {
-    id: "U5",
-    name: "Employee 005",
-    dept: "PM",
-    title: "Project Manager",
-    location: "Atlanta, GA",
-  },
-  {
-    id: "U6",
-    name: "Employee 006",
-    dept: "SW",
-    title: "Software Engineer",
-    location: "Atlanta, GA",
-  },
-  {
-    id: "U7",
-    name: "Employee 007",
-    dept: "HW",
-    title: "Hardware Engineer",
-    location: "Atlanta, GA",
-  },
-  {
-    id: "U8",
-    name: "Employee 008",
-    dept: "SS",
-    title: "Site Supervisor",
-    location: "Dallas, TX",
-  },
-  {
-    id: "U9",
-    name: "Employee 009",
-    dept: "FE",
-    title: "Field Engineer",
-    location: "Dallas, TX",
-  },
-  {
-    id: "U10",
-    name: "Employee 010",
-    dept: "FE",
-    title: "Field Engineer",
-    location: "Newark, NJ",
-  },
-  {
-    id: "U11",
-    name: "Employee 011",
-    dept: "PM",
-    title: "Project Manager",
-    location: "Chicago, IL",
-  },
-  {
-    id: "U12",
-    name: "Employee 012",
-    dept: "SW",
-    title: "Software Engineer",
-    location: "Boston, MA",
-  },
-  {
-    id: "U13",
-    name: "Employee 013",
-    dept: "HW",
-    title: "Hardware Engineer",
-    location: "Atlanta, GA",
-  },
-  {
-    id: "U14",
-    name: "Employee 014",
-    dept: "SS",
-    title: "Site Supervisor",
-    location: "Los Angeles, CA",
-  },
-];
+export const seedPeople: Person[] = [];
 
+/**
+ * Field Engineering staffing rule:
+ * - 2 FE per system from commissioning start through one full month after
+ *   Provisional Acceptance / Go-Live.
+ * - Then 1 FE per system through Final Acceptance.
+ * - The planner is monthly, so a reduction that occurs late in the same month
+ *   as Final Acceptance is not modeled as a partial-month reduction.
+ */
 export const seedBars: PlanBar[] = [
-  {
-    id: "B1",
-    project: "P1",
-    dept: "PM",
-    start: 5,
-    end: 18,
-    allocation: 0.5,
-    personId: "U5",
-  },
-  {
-    id: "B2",
-    project: "P1",
-    dept: "PSE",
-    start: 7,
-    end: 13,
-    allocation: 1,
-    personId: "U1",
-  },
-  {
-    id: "B3",
-    project: "P1",
-    dept: "FE",
-    start: 9,
-    end: 15,
-    allocation: 1,
-    personId: "U3",
-  },
-  { id: "B4", project: "P1", dept: "FE", start: 11, end: 17, allocation: 1 },
-  {
-    id: "B5",
-    project: "P1",
-    dept: "SS",
-    start: 12,
-    end: 16,
-    allocation: 1,
-    personId: "U8",
-  },
-  {
-    id: "B6",
-    project: "P2",
-    dept: "PM",
-    start: 2,
-    end: 15,
-    allocation: 0.5,
-    personId: "U11",
-  },
-  {
-    id: "B7",
-    project: "P2",
-    dept: "PSE",
-    start: 4,
-    end: 12,
-    allocation: 1,
-    personId: "U2",
-  },
-  { id: "B8", project: "P2", dept: "FE", start: 7, end: 13, allocation: 1.5 },
-  {
-    id: "B9",
-    project: "P3",
-    dept: "HW",
-    start: 8,
-    end: 12,
-    allocation: 0.5,
-    personId: "U7",
-  },
-  {
-    id: "B10",
-    project: "P3",
-    dept: "SW",
-    start: 9,
-    end: 14,
-    allocation: 0.75,
-    personId: "U6",
-  },
-  { id: "B11", project: "P3", dept: "PSE", start: 10, end: 18, allocation: 1 },
-  { id: "B12", project: "P3", dept: "FE", start: 13, end: 21, allocation: 2 },
-  { id: "B13", project: "P4", dept: "PM", start: 10, end: 23, allocation: 0.5 },
-  { id: "B14", project: "P4", dept: "PSE", start: 12, end: 20, allocation: 1 },
-  { id: "B15", project: "P4", dept: "FE", start: 16, end: 23, allocation: 2 },
+  // G IAH
+  { id: "G-SP-2", project: "G-IAH", dept: "FE", label: "Skypod", start: 10, end: 18, allocation: 2 },
+  { id: "G-SP-1", project: "G-IAH", dept: "FE", label: "Skypod", start: 19, end: 23, allocation: 1 },
+  { id: "G-IN-2", project: "G-IAH", dept: "FE", label: "Inbound", start: 12, end: 19, allocation: 2 },
+  { id: "G-IN-1", project: "G-IAH", dept: "FE", label: "Inbound", start: 20, end: 23, allocation: 1 },
+  { id: "G-OUT-2", project: "G-IAH", dept: "FE", label: "Outbound", start: 14, end: 22, allocation: 2 },
+  { id: "G-OUT-1", project: "G-IAH", dept: "FE", label: "Outbound", start: 23, end: 23, allocation: 1 },
+
+  // K SAV — Inbound / Outbound commissioning start is assumed in Nov 2026.
+  { id: "K-SP-2", project: "K-SAV", dept: "FE", label: "Skypod", start: 9, end: 14, allocation: 2 },
+  { id: "K-SP-1", project: "K-SAV", dept: "FE", label: "Skypod", start: 15, end: 15, allocation: 1 },
+  { id: "K-IN-2", project: "K-SAV", dept: "FE", label: "Inbound", start: 10, end: 14, allocation: 2 },
+  { id: "K-IN-1", project: "K-SAV", dept: "FE", label: "Inbound", start: 15, end: 15, allocation: 1 },
+  { id: "K-OUT-2", project: "K-SAV", dept: "FE", label: "Outbound", start: 10, end: 14, allocation: 2 },
+  { id: "K-OUT-1", project: "K-SAV", dept: "FE", label: "Outbound", start: 15, end: 15, allocation: 1 },
+
+  // C MLK — the Feb 15 third-party conveyor start is used for Inbound and Outbound.
+  { id: "C-SP-2", project: "C-MLK", dept: "FE", label: "Skypod", start: 13, end: 16, allocation: 2 },
+  { id: "C-IN-2", project: "C-MLK", dept: "FE", label: "Inbound", start: 13, end: 16, allocation: 2 },
+  { id: "C-OUT-2", project: "C-MLK", dept: "FE", label: "Outbound", start: 13, end: 16, allocation: 2 },
 ];
 
 export const seedMilestones: Milestone[] = [
-  {
-    id: "M1",
-    project: "P1",
-    label: "Design freeze",
-    type: "internal",
-    month: 6,
-  },
-  {
-    id: "M2",
-    project: "P1",
-    label: "Software ready",
-    type: "internal",
-    month: 10,
-  },
-  { id: "M3", project: "P1", label: "SAT", type: "internal", month: 15 },
-  { id: "M4", project: "P1", label: "Site ready", type: "external", month: 8 },
-  { id: "M5", project: "P1", label: "WMS ready", type: "external", month: 12 },
-  { id: "M6", project: "P1", label: "Go live", type: "external", month: 16 },
-  {
-    id: "M7",
-    project: "P2",
-    label: "Design freeze",
-    type: "internal",
-    month: 4,
-  },
-  { id: "M8", project: "P2", label: "Site ready", type: "external", month: 7 },
-  { id: "M9", project: "P2", label: "Go live", type: "external", month: 14 },
-  {
-    id: "M10",
-    project: "P3",
-    label: "Design freeze",
-    type: "internal",
-    month: 9,
-  },
-  {
-    id: "M11",
-    project: "P3",
-    label: "Site ready",
-    type: "external",
-    month: 12,
-  },
-  { id: "M12", project: "P3", label: "Go live", type: "external", month: 20 },
-  {
-    id: "M13",
-    project: "P4",
-    label: "Design freeze",
-    type: "internal",
-    month: 11,
-  },
-  {
-    id: "M14",
-    project: "P4",
-    label: "Site ready",
-    type: "external",
-    month: 16,
-  },
-  { id: "M15", project: "P4", label: "Go live", type: "external", month: 23 },
+  // G IAH
+  { id: "G-M1", project: "G-IAH", label: "Skypod · Start commissioning (mid-Nov)", type: "internal", month: 10 },
+  { id: "G-M2", project: "G-IAH", label: "Inbound · Start commissioning (mid-Jan)", type: "internal", month: 12 },
+  { id: "G-M3", project: "G-IAH", label: "Outbound · Start commissioning (Mar)", type: "internal", month: 14 },
+  { id: "G-M4", project: "G-IAH", label: "Skypod · Provisional Acceptance / Go-Live (mid-Jun)", type: "external", month: 17 },
+  { id: "G-M5", project: "G-IAH", label: "Inbound · Provisional Acceptance / Go-Live (Jul 13)", type: "external", month: 18 },
+  { id: "G-M6", project: "G-IAH", label: "Outbound · Provisional Acceptance / Go-Live (Oct 12)", type: "external", month: 21 },
+  { id: "G-M7", project: "G-IAH", label: "Final Acceptance (end Dec)", type: "external", month: 23 },
+
+  // K SAV
+  { id: "K-M1", project: "K-SAV", label: "Skypod · Start commissioning (Oct 2)", type: "internal", month: 9 },
+  { id: "K-M2", project: "K-SAV", label: "Inbound · Start commissioning (Nov, assumed)", type: "internal", month: 10 },
+  { id: "K-M3", project: "K-SAV", label: "Outbound · Start commissioning (Nov, assumed)", type: "internal", month: 10 },
+  { id: "K-M4", project: "K-SAV", label: "Provisional Acceptance / Go-Live (Feb 27)", type: "external", month: 13 },
+  { id: "K-M5", project: "K-SAV", label: "Final Acceptance (Apr 25)", type: "external", month: 15 },
+
+  // C MLK
+  { id: "C-M1", project: "C-MLK", label: "Skypod · Start commissioning (Feb 2)", type: "internal", month: 13 },
+  { id: "C-M2", project: "C-MLK", label: "Inbound · Start commissioning (Feb 15 conveyor)", type: "internal", month: 13 },
+  { id: "C-M3", project: "C-MLK", label: "Outbound · Start commissioning (Feb 15 conveyor)", type: "internal", month: 13 },
+  { id: "C-M4", project: "C-MLK", label: "Provisional Acceptance / Go-Live (Apr 25)", type: "external", month: 15 },
+  { id: "C-M5", project: "C-MLK", label: "Final Acceptance (end May)", type: "external", month: 16 },
 ];
 
 export type Plan = {
@@ -355,7 +163,8 @@ export const initialPlan: Plan = {
   bars: seedBars,
   milestones: seedMilestones,
 };
-export const STORAGE_KEY = "nolazco-resource-plan-v2";
+export const STORAGE_KEY = "nolazco-resource-plan-v3";
+export const LEGACY_STORAGE_KEYS = ["nolazco-resource-plan-v1", "nolazco-resource-plan-v2"];
 export const active = (b: PlanBar, m: number) => b.start <= m && b.end >= m;
 export const demand = (bars: PlanBar[], m: number) =>
   bars.filter((b) => active(b, m)).reduce((n, b) => n + b.allocation, 0);
@@ -438,6 +247,7 @@ export function validPlan(value: unknown): value is Plan {
         month(v.end) &&
         v.end >= v.start &&
         Number.isFinite(v.allocation) &&
+        (v.label === undefined || (typeof v.label === "string" && v.label.trim().length > 0 && v.label.length <= 80)) &&
         v.allocation > 0 &&
         v.allocation <= 20 &&
         (!v.personId ||
